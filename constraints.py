@@ -104,6 +104,10 @@ def no_blocked_slot_conflict(assignment: Dict[str, Any],
     sec = sections[var_id]
     
     for block in blocked_blocks:
+        # 0. Self-Conflict Check (Allow course to occupy its own reservation)
+        if block.get('code') and block['code'] == sec.course_code:
+            continue
+            
         # 1. Room Conflict Check
         if block.get('room') and this_room_name:
             if day == block['day'] and slot == block['slot'] and block['room'] == this_room_name:

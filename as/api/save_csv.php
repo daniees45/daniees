@@ -72,7 +72,9 @@ try {
     // We'll mimic the logic in import_data.php but specifically for the file that was updated
     
     if ($filename === 'rooms.csv') {
+        $conn->query("SET FOREIGN_KEY_CHECKS = 0");
         $conn->query("TRUNCATE TABLE rooms");
+        $conn->query("SET FOREIGN_KEY_CHECKS = 1");
         $handle = fopen($file_path, "r");
         fgetcsv($handle); // Skip header
         $stmt = $conn->prepare("INSERT INTO rooms (room_name, capacity) VALUES (?, ?)");

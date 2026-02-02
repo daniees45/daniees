@@ -383,6 +383,7 @@ def load_general_schedule_blocks(general_csv_path: str) -> List[dict]:
                     slot_obj = TIME_TO_SLOT[time_str]
                     
                     blocks.append({
+                        'code': str(row[c_code]).strip().upper() if c_code else None,
                         'level': level,
                         'semester': sem,
                         'day': day_idx,

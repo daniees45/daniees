@@ -258,7 +258,7 @@ async function uploadCSV(input) {
 async function checkApiStatus() {
     const badge = document.getElementById('apiStatus');
     try {
-        const res = await fetch('http://localhost:5000/health');
+        const res = await fetch('https://my-ai-service-yj44.onrender.com/health');
         const data = await res.json();
         if (data.status === 'ok') {
             badge.className = 'status-badge online';
@@ -317,7 +317,7 @@ document.getElementById('startBtn').addEventListener('click', async () => {
             } catch(e) {}
         }, 1000);
 
-        const response = await fetch('http://localhost:5000/generate', {
+        const response = await fetch('https://my-ai-service-yj44.onrender.com/generate', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
