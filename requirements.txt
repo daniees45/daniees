@@ -4,16 +4,4 @@ flask-cors
 fpdf2
 shap
 numpy>=1.26.0
-pandas
-subprocess
-sys
-pickle
-tabula
-shutil
-shap
-re
-random
-datetime
-time
-csv
-sys
+tabula-py
