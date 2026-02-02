@@ -5,7 +5,7 @@ import sys
 from flask_cors import CORS
 
 # Add project root to path to import main_web
-sys.path.append(os.path.join(os.path.dirname(__file__), '../../'))
+sys.path.append(os.path.join(os.path.dirname(__file__), ''))
 
 try:
     from main_web import run_headless
@@ -17,7 +17,7 @@ app = Flask(__name__)
 CORS(app) # Enable CORS for all routes
 
 # Config
-PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../'))
+PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ''))
 INPUT_FILE = os.path.join(PROJECT_ROOT, 'departmental_courses.csv') # Default input
 OUTPUT_FILE = os.path.join(PROJECT_ROOT, 'final_web_schedule.csv')
 
