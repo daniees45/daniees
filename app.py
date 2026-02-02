@@ -42,8 +42,9 @@ def get_progress():
 def generate():
     data = request.json or {}
     
-    # 1. Update CSVs from DB (Optional, PHP should have done this)
-    # But for now, we assume CSVs are ready
+    # Initialize with default paths
+    input_path = INPUT_FILE
+    output_path = OUTPUT_FILE
     
     # Handle Input File Selection
     chosen_file = data.get('input_file')
@@ -54,7 +55,7 @@ def generate():
         
         target_path = os.path.join(PROJECT_ROOT, chosen_file)
         if os.path.exists(target_path):
-             INPUT_FILE = target_path
+             input_path = target_path
         else:
              return jsonify({"status": "error", "message": f"Input file not found: {chosen_file}"}), 404
              
@@ -63,7 +64,7 @@ def generate():
     if chosen_out:
         if ".." in chosen_out or "/" in chosen_out or "\\" in chosen_out:
              return jsonify({"status": "error", "message": "Invalid output filename security check"}), 400
-        OUTPUT_FILE = os.path.join(PROJECT_ROOT, chosen_out)
+        output_path = os.path.join(PROJECT_ROOT, chosen_out)
 
     # Optional: Course Type & Dept
     c_type = data.get('course_type', 'Departmental')
@@ -78,14 +79,14 @@ def generate():
     try:
         # Run the scheduler
         # mode_choice=2 (Headless/Web), ai_preference=1 (Load from model)
-        success, accuracy = run_headless(INPUT_FILE, 2, OUTPUT_FILE, 1, c_type, dept, avail_mode, exam_mode=exam_mode)
+        success, accuracy = run_headless(input_path, 2, output_path, 1, c_type, dept, avail_mode, exam_mode=exam_mode)
         
         if success:
             return jsonify({
                 "status": "success", 
                 "message": "Schedule generated successfully",
                 "accuracy": f"{accuracy:.2f}%",
-                "output_file": OUTPUT_FILE
+                "output_file": os.path.basename(output_path)
             })
         else:
             return jsonify({"status": "error", "message": "AI failed to find a valid schedule"}), 400
