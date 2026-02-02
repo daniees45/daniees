@@ -3,9 +3,8 @@ flask
 flask-cors
 fpdf2
 shap
-numpy
+numpy>=1.26.0
 pandas
-os
 subprocess
 sys
 pickle
