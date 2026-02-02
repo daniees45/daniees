@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 import subprocess
 import os
 import sys
+from flask_cors import CORS
 
 # Add project root to path to import main_web
 sys.path.append(os.path.join(os.path.dirname(__file__), '../../'))
@@ -11,7 +12,7 @@ try:
 except ImportError:
     run_headless = None
 
-from flask_cors import CORS
+
 app = Flask(__name__)
 CORS(app) # Enable CORS for all routes
 
