@@ -187,7 +187,10 @@ $default_csv = 'departmental_courses.csv';
             Accuracy: <span id="accuracyVal">0%</span>
         </div>
         <p style="margin-bottom: 2rem;">The schedule has been successfully generated and exported.</p>
-        <a href="view_schedule.php" id="viewScheduleBtn" class="glass-btn"><i class="fa-solid fa-calendar-days"></i> View Schedule</a>
+        <div style="display: flex; justify-content: center; gap: 1rem;">
+            <a href="view_schedule.php" id="viewScheduleBtn" class="glass-btn"><i class="fa-solid fa-calendar-days"></i> View Schedule</a>
+            <a href="#" id="downloadPdfBtn" class="glass-btn secondary" style="display: none;"><i class="fa-solid fa-file-pdf"></i> Download PDF</a>
+        </div>
     </div>
 </div>
 
@@ -307,7 +310,7 @@ document.getElementById('startBtn').addEventListener('click', async () => {
         // Start Polling
         let pollInterval = setInterval(async () => {
             try {
-                const res = await fetch('ai_progress.json?t=' + new Date().getTime());
+                const res = await fetch('https://my-ai-service-yj44.onrender.com/progress?t=' + new Date().getTime());
                 const p = await res.json();
                 if (p.status === 'running' && p.percent) {
                     document.getElementById('progressBar').style.width = p.percent + '%';
@@ -354,10 +357,16 @@ document.getElementById('startBtn').addEventListener('click', async () => {
             formData.append('name', 'Auto Version: ' + document.getElementById('outputFile').value);
             formData.append('description', 'AI Generated at ' + new Date().toLocaleString());
             
-            await fetch('api/schedule_versions.php', {
+            const versionRes = await fetch('api/schedule_versions.php', {
                 method: 'POST',
                 body: formData
             });
+            const versionData = await versionRes.json();
+            if (versionData.status === 'success' && versionData.id) {
+                const pdfBtn = document.getElementById('downloadPdfBtn');
+                pdfBtn.href = 'api/download_pdf.php?id=' + versionData.id;
+                pdfBtn.style.display = 'inline-flex';
+            }
             log("Version archived in database.");
 
             log("Success! Redirecting...");

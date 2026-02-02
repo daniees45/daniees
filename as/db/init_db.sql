@@ -72,3 +72,6 @@ CREATE TABLE IF NOT EXISTS schedules (
 -- Hash generated via standard bcrypt cost 10
 INSERT IGNORE INTO users (username, password_hash, role, full_name, email) 
 VALUES ('admin', '$2y$10$S6N4iILVWjkYvSGAmRjN1.zuwnpp/xJmEv1rswH0j/s7vkJV/YOp2', 'super_admin', 'System Admin', 'admin@vvu.edu.gh');
+
+
+ALTER TABLE schedule_versions ADD COLUMN pdf_content LONGBLOB, ADD COLUMN user_id INT, ADD FOREIGN KEY (user_id) REFERENCES users(id);

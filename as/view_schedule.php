@@ -137,9 +137,12 @@ $paged_data = array_slice($data, $offset, $items_per_page);
             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; color: var(--warning);">
                 <div style="display: flex; align-items: center; gap: 10px;">
                     <i class="fa-solid fa-code-branch"></i>
-                    <h3 style="margin: 0; font-size: 1.1rem;">Versions</h3>
+                    <h3 style="margin: 0; font-size: 1.1rem;">Actions</h3>
                 </div>
-                <button onclick="saveVersion()" class="glass-btn small" title="Save Current State"><i class="fa-solid fa-floppy-disk"></i></button>
+                <div style="display: flex; gap: 5px;">
+                    <button onclick="saveVersion()" class="glass-btn small" title="Save Current State"><i class="fa-solid fa-floppy-disk"></i></button>
+                    <button onclick="exportToPDF()" class="glass-btn small primary" title="Export to PDF"><i class="fa-solid fa-file-pdf"></i></button>
+                </div>
             </div>
             
             <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 0.5rem;">
@@ -310,6 +313,69 @@ async function loadVersion() {
             await customAlert("Load Error", data.message, "error");
         }
     } catch (e) { await customAlert("Error", "Check console for details.", "error"); }
+}
+
+async function exportToPDF() {
+    const headers = await customPDFPrompt("Export Timeline PDF");
+    if (!headers) return;
+    
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = 'api/export_pdf.php';
+    // form.target = '_blank';
+    
+    const fields = {
+        'file': '<?php echo $requested_file; ?>',
+        'h1': headers.h1,
+        'h2': headers.h2,
+        'h3': headers.h3,
+        'h4': headers.h4
+    };
+    
+    for (const [name, value] of Object.entries(fields)) {
+        const inp = document.createElement('input');
+        inp.type = 'hidden';
+        inp.name = name;
+        inp.value = value;
+        form.appendChild(inp);
+    }
+    
+    document.body.appendChild(form);
+    form.submit();
+    document.body.removeChild(form);
+}
+
+function customPDFPrompt(title) {
+    return new Promise((resolve) => {
+        const h1 = "VALLEY VIEW UNIVERSITY";
+        const h2 = "COMPUTER SCIENCE, INFORMATION TECHNOLOGY, BUSINESS INFORMATION SYSTEMS AND MATHEMATICAL SCIENCES";
+        const h3 = "SECOND SEMESTER - 2025 / 2026 ACADEMIC YEAR";
+        const h4 = "TEACHING TIMETABLE";
+        
+        const inputs = `
+            <div style="text-align: left; margin-top: 1rem;">
+                <label class="stat-label">Header Line 1</label>
+                <input type="text" id="pdfH1" class="glass-input" style="margin-bottom: 0.5rem; width: 100%; font-size: 0.8rem;" value="${h1}">
+                <label class="stat-label">Header Line 2</label>
+                <input type="text" id="pdfH2" class="glass-input" style="margin-bottom: 0.5rem; width: 100%; font-size: 0.8rem;" value="${h2}">
+                <label class="stat-label">Header Line 3</label>
+                <input type="text" id="pdfH3" class="glass-input" style="margin-bottom: 0.5rem; width: 100%; font-size: 0.8rem;" value="${h3}">
+                <label class="stat-label">Header Line 4</label>
+                <input type="text" id="pdfH4" class="glass-input" style="margin-bottom: 1rem; width: 100%; font-size: 0.8rem;" value="${h4}">
+            </div>
+        `;
+        showGlobalModal(title, inputs, 'prompt', [
+            {text: 'Cancel', class: 'glass-btn secondary', click: () => resolve(null)},
+            {text: 'Export PDF', class: 'glass-btn primary', click: () => {
+                resolve({
+                    h1: document.getElementById('pdfH1').value,
+                    h2: document.getElementById('pdfH2').value,
+                    h3: document.getElementById('pdfH3').value,
+                    h4: document.getElementById('pdfH4').value
+                });
+            }}
+        ]);
+    });
 }
 
 loadVersionList();

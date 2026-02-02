@@ -25,6 +25,19 @@ OUTPUT_FILE = os.path.join(PROJECT_ROOT, 'final_web_schedule.csv')
 def health():
     return jsonify({"status": "ok", "message": "VVU Scheduler API Ready"})
 
+@app.route('/progress', methods=['GET'])
+def get_progress():
+    progress_file = os.path.join(PROJECT_ROOT, 'ai_progress.json')
+    if os.path.exists(progress_file):
+        try:
+            with open(progress_file, 'r') as f:
+                import json
+                data = json.load(f)
+                return jsonify(data)
+        except Exception as e:
+            return jsonify({"status": "error", "message": str(e)}), 500
+    return jsonify({"status": "idle"}), 200
+
 @app.route('/generate', methods=['POST'])
 def generate():
     data = request.json or {}

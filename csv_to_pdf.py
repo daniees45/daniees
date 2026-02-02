@@ -23,7 +23,7 @@ class TimetablePDF(FPDF):
         self.cell(0, 10, f'Page {self.page_no()}/{{nb}}', border=0, 
                   new_x=XPos.RIGHT, new_y=YPos.TOP, align='C')
 
-def create_pdf(csv_input, pdf_output):
+def create_pdf(csv_input, pdf_output, custom_headers=None):
     if not os.path.exists(csv_input):
         print(f"Error: {csv_input} not found.")
         return
@@ -57,12 +57,15 @@ def create_pdf(csv_input, pdf_output):
     pdf.set_font('Helvetica', 'B', 12)
     pdf.set_text_color(0, 0, 0) # Black for headers
     
-    headers = [
-        "VALLEY VIEW UNIVERSITY",
-        "COMPUTER SCIENCE, INFORMATION TECHNOLOGY, BUSINESS INFORMATION SYSTEMS AND MATHEMATICAL SCIENCES",
-        "SECOND SEMESTER - 2025 / 2026 ACADEMIC YEAR",
-        "TEACHING TIMETABLE"
-    ]
+    if custom_headers and len(custom_headers) >= 4:
+        headers = custom_headers
+    else:
+        headers = [
+            "VALLEY VIEW UNIVERSITY",
+            "COMPUTER SCIENCE, INFORMATION TECHNOLOGY, BUSINESS INFORMATION SYSTEMS AND MATHEMATICAL SCIENCES",
+            "SECOND SEMESTER - 2025 / 2026 ACADEMIC YEAR",
+            "TEACHING TIMETABLE"
+        ]
     
     for h_line in headers:
         pdf.cell(total_w, 10, h_line, border=1, align='C', new_x=XPos.LMARGIN, new_y=YPos.NEXT)
@@ -125,26 +128,23 @@ def create_pdf(csv_input, pdf_output):
         # --- DATA ROW COLOR: RED ---
         pdf.set_text_color(255, 0, 0) 
 
-        for col_name, width in columns:
-            csv_key = mapping[col_name]
-            text = str(row.get(csv_key, ""))
-            
-            # Aligment Logic: Left for text, Center for others
-            align = 'L' if col_name in ["LECTURER", "COURSE CODE & TITLE"] else 'C'
-            
-            # Padding for Left Alignment
-            display_text = f" {text}" if align == 'L' else text
-            
-            # Truncate
-            max_chars = int(width * 0.9)
-            if len(display_text) > max_chars:
-                display_text = display_text[:max_chars-3] + "..."
-            
-            pdf.cell(width, row_height, display_text, border=1, 
-                        new_x=XPos.RIGHT, new_y=YPos.TOP, align=align)
+        # Replace the data row loop logic with a more robust version
+    for col_name, width in columns:
+        csv_key = mapping[col_name]
+        text = str(row.get(csv_key, ""))
         
-        pdf.ln()
-    
+        # Get current Y position to ensure all cells in a row are the same height
+        start_y = pdf.get_y()
+        start_x = pdf.get_x()
+
+        # Use multi_cell for wrapping, or keep cell for single line
+        pdf.multi_cell(width, row_height, text, border=1, align=align)
+        
+        # Move cursor back to the top of the row for the next column
+        pdf.set_xy(start_x + width, start_y)
+
+    pdf.ln(row_height) # Move to next line after all columns are drawn
+        
     # Reset color for final status
     pdf.set_text_color(0, 0, 0)
     # Output the PDF
@@ -156,21 +156,25 @@ def create_pdf(csv_input, pdf_output):
 
 
 if __name__ == "__main__":
-    default_input = "vvu_final_4.csv"
-    default_output = "vvu_final_timetable.pdf"
+    import argparse
+    parser = argparse.ArgumentParser(description='CSV to PDF Timetable Converter')
+    parser.add_argument('--input', help='Input CSV file')
+    parser.add_argument('--output', help='Output PDF file')
+    parser.add_argument('--h1', help='Header line 1')
+    parser.add_argument('--h2', help='Header line 2')
+    parser.add_argument('--h3', help='Header line 3')
+    parser.add_argument('--h4', help='Header line 4')
     
-    print("CSV to PDF Converter")
-    if len(sys.argv) > 1:
-        in_csv = sys.argv[1]
-    else:
-        in_csv = input(f"Enter input CSV [{default_input}]: ").strip() or default_input
+    args = parser.parse_args()
+    
+    in_csv = args.input if args.input else "vvu_general_schedule.csv"
+    out_pdf = args.output if args.output else "vvu_final_timetable.pdf"
+    
+    custom = None
+    if args.h1 and args.h2 and args.h3 and args.h4:
+        custom = [args.h1, args.h2, args.h3, args.h4]
         
-    if len(sys.argv) > 2:
-        out_pdf = sys.argv[2]
-    else:
-        out_pdf = input(f"Enter output PDF [{default_output}]: ").strip() or default_output
-    
     if not out_pdf.endswith(".pdf"):
         out_pdf += ".pdf"
         
-    create_pdf(in_csv, out_pdf)
+    create_pdf(in_csv, out_pdf, custom)
